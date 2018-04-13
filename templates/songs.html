@@ -1,0 +1,54 @@
+{% extends "home.html" %}
+
+{% block songs %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <ul class="list-group">
+
+                {% for song in qqm_songs %}
+                {% if song.is_playable %}
+
+                <li class="list-group-item {{'list-group-item-success' if song.papa == 'QQMusic' else 'list-group-item-info'}}">
+                    <a href="{{song.song_media_url}}">{{song.song_name}}</a>
+                    {{song.singer[0].name if song.singer else ""}}
+                    {{song.papa}}
+                </li>
+
+                {% else %}
+                <li class="list-group-item list-group-item-action disable">
+                    {{song.song_name}}
+                    {{song.singer[0].name if song.singer else ""}}
+                    {{song.papa}}
+                </li>
+                {% end %}
+                {% end %}
+            </ul>
+        </div>
+
+        <div class="col-md-6">
+            <ul class="list-group">
+
+                {% for song in nem_songs %}
+                {% if song.is_playable %}
+
+                <li class="list-group-item {{'list-group-item-success' if song.papa == 'QQMusic' else 'list-group-item-info'}}">
+                    <a href="{{song.song_media_url}}">{{song.song_name}}</a>
+                    {{song.singer[0].name if song.singer else ""}}
+                    {{song.papa}}
+                </li>
+
+                {% else %}
+                <li class="list-group-item list-group-item-action disable">
+                    {{song.song_name}}
+                    {{song.singer[0].name if song.singer else ""}}
+                    {{song.papa}}
+                </li>
+                {% end %}
+                {% end %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% end %}
