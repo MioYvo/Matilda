@@ -1,9 +1,9 @@
 # coding=utf-8
 # __author__ = 'Mio'
 
-from music_sources.song import Song, Album, Singer
-from utils import async_request
-from utils.async_request import parse_body2json
+from .song import Song, Album, Singer
+from Matilda.utils import async_request
+from Matilda.utils.async_request import parse_body2json
 
 SEARCH_URL = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp"
 DETAILS_URL = "https://c.y.qq.com/v8/fcg-bin/fcg_play_single_song.fcg"

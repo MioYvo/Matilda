@@ -19,7 +19,7 @@ def get(url, params=None, callback=None, raise_error=True, **kwargs):
     return http_client.fetch(request, callback=callback, raise_error=raise_error)
 
 
-def post(url, data=None, json=None, callback=None, **kwargs):
+def post(url, data=None, json=None, callback=None, raise_error=True, **kwargs):
     if kwargs.get('validate_cert') is None:
         kwargs['validate_cert'] = False
 
@@ -38,7 +38,7 @@ def post(url, data=None, json=None, callback=None, **kwargs):
     else:
         request = url
 
-    return http_client.fetch(request)
+    return http_client.fetch(request, callback=callback, raise_error=raise_error)
 
 
 def parse_body2json(response: HTTPResponse):

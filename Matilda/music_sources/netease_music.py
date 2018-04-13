@@ -36,7 +36,6 @@ import binascii
 from Crypto.Cipher import AES
 from http.cookiejar import LWPCookieJar
 from bs4 import BeautifulSoup
-from utils import async_request
 import requests
 
 # from .config import Config

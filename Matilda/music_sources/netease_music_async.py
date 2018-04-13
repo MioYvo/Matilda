@@ -14,9 +14,9 @@ from typing import List
 
 from Crypto.Cipher import AES
 
-from music_sources.song import Song, Album, Singer
-from utils import async_request
-from utils.async_request import parse_body2json
+from .song import Song, Album, Singer
+from Matilda.utils import async_request
+from Matilda.utils.async_request import parse_body2json
 
 modulus = ('00e0b509f6259df8642dbc35662901477df22677ec152b5ff68ace615bb7'
            'b725152b3ab17a876aea8a5aa76d2e417629ec4ee341f56135fccf695280'
