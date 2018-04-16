@@ -7,6 +7,20 @@ Album = namedtuple("Album", ['id', 'mid', 'name', 'pic_url'])
 Singer = namedtuple("Singer", ['id', 'mid', 'name'])
 
 
+class Playlist(object):
+    def __init__(self, name, songs, cover_img_url):
+        self.name = name
+        self.songs = songs
+        self.cover_img_url = cover_img_url
+
+    def to_dict(self):
+        return dict(
+            name=self.name,
+            cover_img_url=self.cover_img_url,
+            songs=[s.to_dict() for s in self.songs]
+        )
+
+
 class Song(object):
     def __init__(self, song_name: str, song_id: int, song_mid: str, song_media_url: str, lyric: str, album: Album,
                  singer: List[Singer], is_playable: bool):

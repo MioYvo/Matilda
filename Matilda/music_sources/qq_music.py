@@ -1,7 +1,7 @@
 # coding=utf-8
 # __author__ = 'Mio'
 
-from .song import Song, Album, Singer
+from Matilda.music_sources.song import Song, Album, Singer, Playlist
 from Matilda.utils import async_request
 from Matilda.utils.async_request import parse_body2json
 
@@ -41,12 +41,21 @@ class QQMusic(object):
 
     async def make_song(self, song):
         return QSong(
-            song_name=song['songname'], song_id=song['songid'], song_mid=song['songmid'],
+            song_name=song['songname'],
+            song_id=song['songid'],
+            song_mid=song['songmid'],
             song_media_url=await self.song_media_url(song['songmid']),
             lyric="",
-            album=Album(id=song['albumid'], mid=song['albummid'], name=song['albumname'],
-                        pic_url=self.album_pic_url(song['albummid'])),
-            singer=[Singer(id=singer['id'], mid=singer['mid'], name=singer['name']) for singer in song['singer']],
+            album=Album(
+                id=song['albumid'], mid=song['albummid'],
+                name=song['albumname'],
+                pic_url=self.album_pic_url(song['albummid'])
+            ),
+            singer=[
+                Singer(
+                    id=singer['id'], mid=singer['mid'], name=singer['name']
+                ) for singer in song['singer']
+            ],
             # song['alertid']: 0:无版权, 2:独家+MV, 11:无标签, 100002:独家+MV,
             is_playable=False if song['alertid'] == 0 else True
         )
@@ -111,11 +120,17 @@ class QQMusic(object):
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
         }
         res = await self.req.get(url=PLAYLIST_URL, params=params, headers=headers)
-        cd_list = res.get('cdlist')
+        result = parse_body2json(res)
+        cd_list = result.get('cdlist')
         if cd_list:
-            songs_list = cd_list.get('songlist')
+            cd = cd_list[0]
+            songs_list = cd.get('songlist')
             if songs_list:
-                return [self.make_song(s) for s in songs_list]
+                return Playlist(
+                    name=cd['dissname'],
+                    songs=[await self.make_song(s) for s in songs_list],
+                    cover_img_url=cd['logo']
+                )
             else:
                 raise Exception("songlist not found or is empty")
         else:
@@ -138,6 +153,7 @@ if __name__ == '__main__':
 
     async def test():
         rst = await client.search("田馥甄 渺小")
+        rst = await client.playlist("3802473507")
         print(rst)
 
 

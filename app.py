@@ -22,7 +22,7 @@ def main():
         static_path=os.path.join(os.path.dirname(__file__), "Matilda/static"),
         # xsrf_cookies=True,
         debug=options.debug,
-        blog_title="音乐墨盒",
+        blog_title="Matilda",
     )
     app.listen(options.port)
     logging.info(f"app run on {options.port}")

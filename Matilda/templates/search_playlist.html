@@ -1,17 +1,17 @@
-{% extends "base.html" %}
+{% extends "home.html" %}
 
 {% block navbar %}
 <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
-    <a class="navbar-brand" href="/">Matilda</a>
+    <a class="navbar-brand" href="/">音乐墨盒</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="/search_playlist">Playlist</a>
             </li>
         </ul>
@@ -22,27 +22,17 @@
     </div>
 </nav>
 {% end %}
-{% block body %}
+
 {% block content %}
 <div class="jumbotron">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-4">
-                <img class="img-fluid" src="https://i.pinimg.com/originals/56/4a/d0/564ad01006be54fd4bda52b8d53d8ca0.gif">
-            </div>
-
-            <div class="col-md-4 ">
-                <img class="img-fluid" src="https://i.pinimg.com/564x/bc/1d/aa/bc1daa8b105546a9f53030eff32d379b.jpg">
-            </div>
-
-            <div class="col-md-4 img-response">
-                <img class="img-fluid" src="https://i.pinimg.com/564x/e5/5a/b9/e55ab95f73b6cc1d29924a92bbd57656.jpg">
-
-            </div>
+    <div class="container">
+        <div class="row justify-content-md-center">
+            <form class="form-inline my-2 my-lg-0" action="/playlist" method="get" enctype="text/plain">
+                <textarea class="form-control mr-sm-2" type="textarea" placeholder="Playlist url" aria-label="Search"
+                          name="pl" rows="2"></textarea>
+                <button class="btn btn-outline-success my-sm-0" type="submit">Import</button>
+            </form>
         </div>
     </div>
 </div>
 {% end %}
-{% end %}
-
-

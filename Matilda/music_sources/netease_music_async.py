@@ -14,7 +14,7 @@ from typing import List
 
 from Crypto.Cipher import AES
 
-from .song import Song, Album, Singer
+from Matilda.music_sources.song import Song, Album, Singer, Playlist
 from Matilda.utils import async_request
 from Matilda.utils.async_request import parse_body2json
 
@@ -191,20 +191,35 @@ class NetEaseMusic(object):
                                   # headers=self.header, )
                                   )
         result = parse_body2json(res)
-        try:
-            simple_songs = result['playlist']['tracks']
-            songs_ids = map(lambda x: x['id'], result['playlist']['trackIds'])
-        except Exception as e:
-            return False, e
+
+        simple_songs = result['playlist']['tracks']
+        songs_ids = [x['id'] for x in result['playlist']['trackIds']]
 
         songs_url_detail = await self.songs_detail_new_api(list(songs_ids))
         songs_url_detail_map = {s['id']: s['url'] for s in songs_url_detail}
 
-        return [NSong(
-            song_name=s['name'],
-            song_id=s['id'], song_mid=s['id'],
-            song_media_url=''
-        ) for s in simple_songs]
+        songs = [NSong(
+            song_name=song['name'],
+            song_id=song['id'], song_mid=song['id'],
+            song_media_url=songs_url_detail_map.get(song['id'], ''),
+            lyric="",
+            album=Album(
+                id=song['al']['id'],
+                mid=song['al']['id'],
+                name=song['al']['name'],
+                pic_url=song['al']['picUrl']
+            ),
+            singer=[
+                Singer(
+                    id=singer['id'],
+                    mid=singer['id'],
+                    name=singer['name'],
+                )
+                for singer in song['ar']
+            ],
+            is_playable=True if songs_url_detail_map.get(song['id']) else False
+        ) for song in simple_songs]
+        return Playlist(name=result['playlist']['name'], songs=songs, cover_img_url=result['playlist']['coverImgUrl'])
 
 
 if __name__ == '__main__':
@@ -213,4 +228,4 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     # loop.run_until_complete(client.search("周杰伦"))
-    loop.run_until_complete(client.playlist(40928655))
+    loop.run_until_complete(client.playlist(751385113))

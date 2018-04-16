@@ -12,7 +12,7 @@ def get(url, params=None, callback=None, raise_error=True, **kwargs):
         kwargs['validate_cert'] = False
 
     if not isinstance(url, HTTPRequest):
-        request = HTTPRequest(url=url_concat(url, params), **kwargs)
+        request = HTTPRequest(method="GET", url=url_concat(url, params), **kwargs)
     else:
         request = url
 
@@ -35,6 +35,18 @@ def post(url, data=None, json=None, callback=None, raise_error=True, **kwargs):
         else:
             request = HTTPRequest(method="POST", url=url_concat(url, kwargs.get("params", None)),
                                   **kwargs)
+    else:
+        request = url
+
+    return http_client.fetch(request, callback=callback, raise_error=raise_error)
+
+
+def head(url, params=None, callback=None, raise_error=True, **kwargs):
+    if kwargs.get('validate_cert') is None:
+        kwargs['validate_cert'] = False
+
+    if not isinstance(url, HTTPRequest):
+        request = HTTPRequest(method="HEAD", url=url_concat(url, params), **kwargs)
     else:
         request = url
 
