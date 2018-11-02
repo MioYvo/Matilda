@@ -71,7 +71,35 @@ class ImportPlayList(BaseRequestHandler):
             self.render("songs.html", qqm_songs=[], nem_songs=[])
             return
 
-        self.render("playlist.html", playlist=pl)
+        not_playable_songs = []
+        playable_songs = []
+        for song in pl.songs:
+            if song.is_playable:
+                playable_songs.append(song)
+            else:
+                not_playable_songs.append(song)
+
+        tried_replace_songs = {}
+        num = 1
+        for song in not_playable_songs:
+            # 가시나 (Gashina)
+            if song.song_name.find("("):
+                song_name = song.song_name[:song.song_name.find("(")].strip()
+            else:
+                song_name = song.song_name
+
+            if url_parsed.netloc == NETLOC_163:
+                songs = await qqm_client.search(key_words=song_name + " ".join((singer.name for singer in song.singer)), number=num)
+            else:
+                songs = await nem_client.search(key_words=f'{song_name} {" ".join((singer.name for singer in song.singer))}', number=num)
+
+            if songs:
+                tried_replace_songs[song.song_name] = songs[0]
+            else:
+                tried_replace_songs[song.song_name] = song
+
+        pl.songs = playable_songs + not_playable_songs
+        self.render("playlist.html", playlist=pl, tried_replace_songs=list(tried_replace_songs.values()))
         return
 
     async def parse_qq_pl(self, url_parsed):

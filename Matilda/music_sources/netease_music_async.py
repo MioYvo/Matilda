@@ -87,7 +87,7 @@ class NetEaseMusic(object):
         )
         search_rst = parse_body2json(res)
         rst = []
-        print(search_rst)
+        # print(search_rst)
         if search_rst['result']['songCount'] > 0 and search_rst['result'].get('songs'):
             songs_ids = [song['id'] for song in search_rst['result']['songs']]
             songs_detail = await self.song_details(songs_ids)

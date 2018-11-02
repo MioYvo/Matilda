@@ -32,7 +32,7 @@
                     {% if song.is_playable %}
 
                     <li class="list-group-item {{'list-group-item-success' if song.papa == 'QQMusic' else 'list-group-item-info'}}">
-                        <a href="{{song.song_media_url}}">{{song.song_name}}</a>
+                        <a href="{{song.song_media_url}}" download="{{song.song_name}}">{{song.song_name}}</a>
                         {{song.singer[0].name if song.singer else ""}}
                         {{song.papa}}
                     </li>
@@ -55,7 +55,7 @@
                     {% if song.is_playable %}
 
                     <li class="list-group-item {{'list-group-item-success' if song.papa == 'QQMusic' else 'list-group-item-info'}}">
-                        <a href="{{song.song_media_url}}">{{song.song_name}}</a>
+                        <a href="{{song.song_media_url}}" download="{{song.song_name}}">{{song.song_name}}</a>
                         {{song.singer[0].name if song.singer else ""}}
                         {{song.papa}}
                     </li>

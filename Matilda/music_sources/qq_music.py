@@ -1,9 +1,13 @@
 # coding=utf-8
 # __author__ = 'Mio'
+from random import random
+from time import time
 
 from Matilda.music_sources.song import Song, Album, Singer, Playlist
 from Matilda.utils import async_request
 from Matilda.utils.async_request import parse_body2json
+
+VKEY_URL = "https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg"
 
 SEARCH_URL = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp"
 DETAILS_URL = "https://c.y.qq.com/v8/fcg-bin/fcg_play_single_song.fcg"
@@ -13,11 +17,24 @@ PLAYLIST_URL = "https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg"
 ALBUM_DETAILS_URL = "https://c.y.qq.com/v8/fcg-bin/fcg_v8_album_info_cp.fcg"
 ALBUM_PIC_URL = "https://y.gtimg.cn/music/photo_new/T002R300x300M000{album_media_id}.jpg"  # get 300x300 pic of album
 
+QUALITY_192K = "192k"
+QUALITY_320K = "320k"
+QUALITY_APE = "ape"
+QUALITY_FLAC = "flac"
+
+QUALITY_D = {
+    QUALITY_192K: ['M500', 'mp3'],
+    QUALITY_320K: ['M800', 'mp3'],
+    QUALITY_APE: ["A000", 'ape'],
+    QUALITY_FLAC: ['F000', 'flac']
+}
+
 
 class QQMusic(object):
-    def __init__(self):
+    def __init__(self, quality=QUALITY_320K):
         # self.req = async.GAsyncHTTPClient()
         self.req = async_request
+        self.quality = quality
 
     async def search(self, key_words, page=1, number=5, current_page=1):
         params = {
@@ -79,10 +96,30 @@ class QQMusic(object):
         # print(f"{data['data'][0]['name']:<15}|{data['data'][0]['album']['name']:^15}")
         return data
 
-    async def song_media_url(self, song_mid):
+    async def get_vkey_guid(self, songmid):
+        filename = f'C400{songmid}.m4a'
+        guid = int(random() * 2147483647) * int(time() * 1000) % 10000000000
+        d = {
+            'format': 'json',
+            'cid': 205361747,
+            'uin': 0,
+            'songmid': songmid,
+            'filename': filename,
+            'guid': guid,
+        }
+
+        res = await self.req.get(url=VKEY_URL, params=d)
+        data = parse_body2json(res)
+        return data['data']['items'][0]['vkey'], guid
+
+    async def song_media_url(self, song_mid, quality=None, uin=0):
         # data = await self.details(song_mid=song_mid)
         # return list(data['url'].values())[0] if data['url'] else None
-        return SONG_MEDIA_URL.format(song_mid=song_mid)
+        quality = QUALITY_D.get(quality) if quality else QUALITY_D.get(self.quality)
+        filename = f"{quality[0]}{song_mid}.{quality[1]}"
+        vkey, guid = await self.get_vkey_guid(song_mid)
+        return f'http://streamoc.music.tc.qq.com/{filename}?vkey={vkey}&guid={guid}&uin={uin}&fromtag=1'
+        # return SONG_MEDIA_URL.format(song_mid=song_mid)
 
     def album_pic_url(self, album_mid):
         return ALBUM_PIC_URL.format(album_media_id=album_mid)
@@ -154,7 +191,7 @@ if __name__ == '__main__':
     async def test():
         rst = await client.search("田馥甄 渺小")
         rst = await client.playlist("3802473507")
-        print(rst)
+        # print(rst)
 
 
     loop = asyncio.get_event_loop()
