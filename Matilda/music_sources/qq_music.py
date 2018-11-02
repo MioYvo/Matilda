@@ -183,16 +183,15 @@ class QSong(Song):
         return "QQMusic"
 
 
-if __name__ == '__main__':
-    client = QQMusic()
-    import asyncio
-
-
-    async def test():
-        rst = await client.search("田馥甄 渺小")
-        rst = await client.playlist("3802473507")
-        # print(rst)
-
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(test())
+# if __name__ == '__main__':
+#     client = QQMusic()
+#     import asyncio
+#
+#     async def test():
+#         rst = await client.search("田馥甄 渺小")
+#         rst = await client.playlist("3802473507")
+#         print(rst)
+#
+#
+#     loop = asyncio.get_event_loop()
+#     loop.run_until_complete(test())

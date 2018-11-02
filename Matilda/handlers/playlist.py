@@ -6,6 +6,7 @@ from Matilda.utils import async_request
 from Matilda.utils.web import BaseRequestHandler
 from Matilda.music_sources import qqm_client, nem_client
 from tornado.httputil import urlparse, parse_qsl
+from urllib.parse import parse_qs
 
 NETLOC_163 = "music.163.com"
 NETLOC_QQ = "y.qq.com"
@@ -40,8 +41,8 @@ class ImportPlayList(BaseRequestHandler):
                 pl_url = pl_url.split()[0].split('》')[1]
             except Exception as e:
                 logging.error(e)
-                self.render("songs.html", qqm_songs=[], nem_songs=[])
-                return
+                # self.render("songs.html", qqm_songs=[], nem_songs=[])
+                # return
         else:
             head_res = await async_request.head(pl_url)
             pl_url = getattr(head_res, 'effective_url', None)
@@ -88,10 +89,11 @@ class ImportPlayList(BaseRequestHandler):
             else:
                 song_name = song.song_name
 
+            singer_name = " ".join([singer.name for singer in song.singer])
             if url_parsed.netloc == NETLOC_163:
-                songs = await qqm_client.search(key_words=song_name + " ".join((singer.name for singer in song.singer)), number=num)
+                songs = await qqm_client.search(key_words=f'{song_name} {singer_name}', number=num)
             else:
-                songs = await nem_client.search(key_words=f'{song_name} {" ".join((singer.name for singer in song.singer))}', number=num)
+                songs = await nem_client.search(key_words=f'{song_name} {singer_name}', number=num)
 
             if songs:
                 tried_replace_songs[song.song_name] = songs[0]
@@ -120,12 +122,16 @@ class ImportPlayList(BaseRequestHandler):
             return True, songs
 
     async def parse_163_pl(self, url_parsed):
-        path = url_parsed.path.split('/')  # '/playlist/751385113/46154092'
-        try:
+        path = url_parsed.path.split('/')
+        if len(path) is 4 and path[2].isdigit():    # http://music.163.com/playlist/751385113/46154092?userid=46154092
             pl_id = int(path[2])
-            songs = await nem_client.playlist(pl_id)
-        except Exception as e:
-            logging.error(e)
-            return False, e
+        elif "my/m/music/" in url_parsed.fragment:   # https://music.163.com/#/my/m/music/playlist?id=40928655
+            try:
+                pl_id = parse_qs(url_parsed.fragment.split("?")[1]).get('id')[0]
+            except Exception as e:
+                return False, e
         else:
-            return True, songs
+            return False, Exception("Url not supported.")
+
+        songs = await nem_client.playlist(pl_id)
+        return True, songs

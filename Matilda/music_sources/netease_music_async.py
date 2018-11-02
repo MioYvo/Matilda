@@ -222,10 +222,10 @@ class NetEaseMusic(object):
         return Playlist(name=result['playlist']['name'], songs=songs, cover_img_url=result['playlist']['coverImgUrl'])
 
 
-if __name__ == '__main__':
-    client = NetEaseMusic()
-    import asyncio
-
-    loop = asyncio.get_event_loop()
-    # loop.run_until_complete(client.search("周杰伦"))
-    loop.run_until_complete(client.playlist(751385113))
+# if __name__ == '__main__':
+#     client = NetEaseMusic()
+#     import asyncio
+#
+#     loop = asyncio.get_event_loop()
+#     # loop.run_until_complete(client.search("周杰伦"))
+#     loop.run_until_complete(client.playlist(751385113))
