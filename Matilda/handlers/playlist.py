@@ -41,8 +41,16 @@ class ImportPlayList(BaseRequestHandler):
                 pl_url = pl_url.split()[0].split('》')[1]
             except Exception as e:
                 logging.error(e)
+                pl_url = None
                 # self.render("songs.html", qqm_songs=[], nem_songs=[])
                 # return
+        elif NETLOC_QQ in pl_url:
+            # https://y.qq.com/n/yqq/playlist/3802473507.html#stat=y_new.profile.create_playlist.click&dirid=1
+            pl_url_split = pl_url.split("#")
+            pl_url = None
+            for split in pl_url_split:
+                if NETLOC_QQ in split:
+                    pl_url = split
         else:
             head_res = await async_request.head(pl_url)
             pl_url = getattr(head_res, 'effective_url', None)
@@ -105,15 +113,17 @@ class ImportPlayList(BaseRequestHandler):
         return
 
     async def parse_qq_pl(self, url_parsed):
-
         params = dict(parse_qsl(url_parsed.query))
-        if not params:
-            return False, "no params"
-
-        pl_id = params.get("id", None)
-        if not pl_id:
-            return False, "no id of the play list"
-
+        if params:
+            pl_id = params.get("id", None)
+            if not pl_id:
+                return False, "no id of the play list"
+        else:
+            # ParseResult(scheme='https', netloc='y.qq.com', path='/n/yqq/playlist/3802473507.html', params='', query='', fragment='')
+            if 'n/yqq/playlist' in url_parsed.path:
+                pl_id = int(url_parsed.path.split('.html')[0].split('playlist/')[1])
+            else:
+                return False, f"Wrong path {url_parsed.path}"
         try:
             songs = await qqm_client.playlist(pl_id=pl_id)
         except Exception as e:
