@@ -1,6 +1,7 @@
 # coding=utf-8
 # __author__ = 'Mio'
 from Matilda.music_sources import qqm_client, nem_client
+from Matilda.settings import NUM_OF_SONGS_SEARCH
 from Matilda.utils.web import BaseRequestHandler
 
 
@@ -11,7 +12,7 @@ class SearchSongs(BaseRequestHandler):
             self.render("songs.html", qqm_songs=[], nem_songs=[])
             return
 
-        num = 5
+        num = NUM_OF_SONGS_SEARCH
         qqm_songs = await qqm_client.search(key_words=kw, number=num)
         nem_songs = await nem_client.search(key_words=kw, number=num)
         # if qqm_songs and qqm_songs[0].is_playable:

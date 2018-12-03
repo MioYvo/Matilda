@@ -11,6 +11,7 @@ import hashlib
 import random
 import binascii
 from typing import List
+from platform import system
 
 from Crypto.Cipher import AES
 
@@ -185,11 +186,12 @@ class NetEaseMusic(object):
 
     async def playlist(self, playlist_id):
         csrf = ''
-        data = {'id': playlist_id, 'total': 'true', 'csrf_token': csrf, 'limit': 1000, 'n': 1000, 'offset': 0}
-        res = await self.req.post(PLAYLIST_URL,
-                                  data=encrypted_request(data),
-                                  # headers=self.header, )
-                                  )
+        data = {'id': playlist_id, 'total': 'true', 'csrf_token': csrf, 'limit': 100, 'n': 100, 'offset': 0}
+        res = await self.req.post(
+            PLAYLIST_URL,
+            data=encrypted_request(data),
+            headers={"Cookie": f"os={system()}"}
+        )
         result = parse_body2json(res)
 
         simple_songs = result['playlist']['tracks']
@@ -220,7 +222,6 @@ class NetEaseMusic(object):
             is_playable=True if songs_url_detail_map.get(song['id']) else False
         ) for song in simple_songs]
         return Playlist(name=result['playlist']['name'], songs=songs, cover_img_url=result['playlist']['coverImgUrl'])
-
 
 # if __name__ == '__main__':
 #     client = NetEaseMusic()

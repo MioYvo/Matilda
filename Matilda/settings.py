@@ -15,6 +15,8 @@ alias_db = {
 MONGO_HOST = getenv("MONGO_HOST", "mongo")
 MONGO_PORT = int(getenv("MONGO_PORT", "27017"))
 
+NUM_OF_SONGS_SEARCH = int(getenv("NUM_OF_SONGS_SEARCH", 5))
+
 
 def register_db():
     for alias, db in alias_db.items():

@@ -123,9 +123,18 @@ class ImportPlayList(BaseRequestHandler):
 
     async def parse_163_pl(self, url_parsed):
         path = url_parsed.path.split('/')
-        if len(path) is 4 and path[2].isdigit():    # http://music.163.com/playlist/751385113/46154092?userid=46154092
+        if len(path) is 4 and path[2].isdigit():
+            # http://music.163.com/playlist/751385113/46154092?userid=46154092
             pl_id = int(path[2])
-        elif "my/m/music/" in url_parsed.fragment:   # https://music.163.com/#/my/m/music/playlist?id=40928655
+        elif url_parsed.path == '/' and "playlist?id=" in url_parsed.fragment:
+            # https://music.163.com/#/playlist?id=2521554648
+            url_parsed_question = url_parsed.fragment.split('?id=')
+            if len(url_parsed_question) == 2 and url_parsed_question[1].isdigit():
+                pl_id = int(url_parsed_question[1])
+            else:
+                return False, Exception("Wrong NEM share url.")
+        elif "my/m/music/" in url_parsed.fragment:
+            # https://music.163.com/#/my/m/music/playlist?id=40928655
             try:
                 pl_id = parse_qs(url_parsed.fragment.split("?")[1]).get('id')[0]
             except Exception as e:
