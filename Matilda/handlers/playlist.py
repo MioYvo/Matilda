@@ -37,13 +37,16 @@ class ImportPlayList(BaseRequestHandler):
         pl_url = pl_url.strip()
 
         if NETLOC_163 in pl_url:
-            try:
-                pl_url = pl_url.split()[0].split('》')[1]
-            except Exception as e:
-                logging.error(e)
-                pl_url = None
-                # self.render("songs.html", qqm_songs=[], nem_songs=[])
-                # return
+            if "分享" in pl_url:
+                try:
+                    pl_url = pl_url.split()[0].split('》')[1]
+                except Exception as e:
+                    logging.error(e)
+                    pl_url = None
+                    # self.render("songs.html", qqm_songs=[], nem_songs=[])
+                    # return
+            else:
+                pass
         elif NETLOC_QQ in pl_url:
             # https://y.qq.com/n/yqq/playlist/3802473507.html#stat=y_new.profile.create_playlist.click&dirid=1
             pl_url_split = pl_url.split("#")
