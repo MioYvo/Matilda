@@ -3,7 +3,7 @@
 from random import random
 from time import time
 
-from Matilda.music_sources.song import Song, Album, Singer, Playlist
+from Matilda.music_sources.song import Song, Album, Singer, Playlist, AlbumDetail
 from Matilda.utils import async_request
 from Matilda.utils.async_request import parse_body2json
 
@@ -115,6 +115,8 @@ class QQMusic(object):
     async def song_media_url(self, song_mid, quality=None, uin=0):
         # data = await self.details(song_mid=song_mid)
         # return list(data['url'].values())[0] if data['url'] else None
+        if not song_mid:
+            return ''
         quality = QUALITY_D.get(quality) if quality else QUALITY_D.get(self.quality)
         filename = f"{quality[0]}{song_mid}.{quality[1]}"
         vkey, guid = await self.get_vkey_guid(song_mid)
@@ -133,11 +135,21 @@ class QQMusic(object):
             "outCharset": "utf-8",
         }
         res = await self.req.get(url=ALBUM_DETAILS_URL, params=params)
-        data = parse_body2json(res)
+        album_detail = parse_body2json(res)
         # data['code'] == 0 is good, or is not
         # TODO need a common parse response method
-        data['data']['ablum_pic_url'] = self.album_pic_url(album_media_id)
-        return data['data']
+        if album_detail.get('code', -1) == 0:
+            return AlbumDetail(
+                name=album_detail['data']['name'],
+                songs=[await self.make_song(s) for s in album_detail['data']['list']],
+                cover_img_url=self.album_pic_url(album_media_id),
+                singer=Singer(
+                    id=album_detail['data']['singerid'],
+                    mid=album_detail['data']['singermid'],
+                    name=album_detail['data']['singername']
+                )
+            )
+        raise Exception(album_detail.get('message', 'album details error'))
 
     async def playlist(self, pl_id):
         params = {
