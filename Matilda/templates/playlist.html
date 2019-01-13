@@ -27,58 +27,55 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-lg-2">
+        <div class="col-lg-3">
             <img src="{{ playlist.cover_img_url}}" class="img-thumbnail img-responsive">
             <h4>{{ playlist.name }}</h4>
         </div>
+        <div class="table-responsive-lg">
+            <table class="table table-hover table-sm ">
+                <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">NAME</th>
+                    <th scope="col">SINGER</th>
+                    <th scope="col">SOURCE</th>
+                    <th scope="col">★</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for index, song in enumerate(playlist.songs, start=1) %}
 
-            <div class="col-lg-5">
-                <ul class="list-group">
-
-                    {% for song in playlist.songs %}
-                    {% if song.is_playable %}
-
-                    <li class="list-group-item {{'list-group-item-success' if song.papa == 'QQMusic' else 'list-group-item-info'}}">
-                        <a href="{{song.song_media_url}}">{{song.song_name}}</a>
-                        {{song.singer[0].name if song.singer else ""}}
-                        {{song.papa}}
-                    </li>
-
+                <tr class="{{'table-danger' if not song.is_playable else ''}}">
+                    <td>{{index}}</td>
+                    <td>{{song.song_name}}</td>
+                    <td>{{','.join([s.name for s in song.singer]) if song.singer else ''}}</td>
+                    {% if song.is_playable%}
+                    <td class="{{'table-success' if song.papa == 'QQMusic' else 'table-info'}}">{{song.papa}}</td>
+                    {% else %}
+                    <td></td>
                     {% end %}
-                    {% end %}
-                </ul>
-            </div>
+                    <td><a href="{{song.song_media_url}}">🎵</a></td>
+                </tr>
 
-            <div class="col-lg-5">
-                <ul class="list-group">
+                {% end %}
+                </tbody>
+            </table>
 
-                    {% for song in playlist.songs %}
-                    {% if not song.is_playable %}
+            <!--<ul class="list-group" id="playlist">-->
 
-                    <li class="list-group-item list-group-item-danger">
-                        <a href="{{song.song_media_url}}">{{song.song_name}}</a>
-                        {{song.singer[0].name if song.singer else ""}}
-                        {{song.papa}}
-                    </li>
+                <!--{% for song in playlist.songs %}-->
 
-                    {% end %}
-                    {% end %}
+                <!--<li class="list-group-item {{'list-group-item-success' if song.papa == 'QQMusic' else 'list-group-item-info'}}-->
+                <!--{{'disabled' if not song.is_playable else ''}}">-->
+                    <!--<a href="{{song.song_media_url}}">{{song.song_name}}</a>-->
+                    <!--{{song.singer[0].name if song.singer else ""}}-->
+                    <!--{{song.papa}}-->
+                <!--</li>-->
 
-                    {% for song in tried_replace_songs %}
-                    {% if song.is_playable %}
-
-                    <li class="list-group-item {{'list-group-item-success' if song.papa == 'QQMusic' else 'list-group-item-info'}}">
-                        <a href="{{song.song_media_url}}">{{song.song_name}}</a>
-                        {{song.singer[0].name if song.singer else ""}}
-                        {{song.papa}}
-                    </li>
-
-                    {% end %}
-                    {% end %}
-                </ul>
-            </div>
-
+                <!--{% end %}-->
+            <!--</ul>-->
         </div>
+
     </div>
 </div>
 {% end %}
