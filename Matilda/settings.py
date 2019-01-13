@@ -1,7 +1,8 @@
 # coding=utf-8
 # __author__ = 'Mio'
-# from os import getenv
 
+from os import getenv
+NUM_OF_SONGS_SEARCH = int(getenv("NUM_OF_SONGS_SEARCH", 5))
 # --------------------     mongo     --------------------
 
 # from mongoengine import register_connection
@@ -15,7 +16,7 @@
 # MONGO_HOST = getenv("MONGO_HOST", "mongo")
 # MONGO_PORT = int(getenv("MONGO_PORT", "27017"))
 #
-# NUM_OF_SONGS_SEARCH = int(getenv("NUM_OF_SONGS_SEARCH", 5))
+
 #
 #
 # def register_db():
