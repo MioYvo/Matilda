@@ -21,6 +21,24 @@ class Playlist(object):
         )
 
 
+class AlbumDetail(object):
+    def __init__(self, name, songs, cover_img_url, singer: Singer):
+        self.name = name
+        self.songs = songs
+        self.cover_img_url = cover_img_url
+        self.singer = singer
+
+    def to_dict(self):
+        return dict(
+            name=self.name,
+            cover_img_url=self.cover_img_url,
+            songs=[s.to_dict() for s in self.songs],
+            singer=Singer(
+                    id=self.singer.id, mid=self.singer.mid, name=self.singer.name
+                )
+        )
+
+
 class Song(object):
     def __init__(self, song_name: str, song_id: int, song_mid: str, song_media_url: str, lyric: str, album: Album,
                  singer: List[Singer], is_playable: bool):
