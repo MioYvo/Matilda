@@ -11,7 +11,7 @@ from Matilda.settings import register_db
 from Matilda.urls import urls
 
 define("port", default=8888, help="run on the given port", type=int)
-define("debug", default=True, help="run in debug mode")
+define("debug", default=False, help="run in debug mode")
 
 
 class MatildaApp(tornado.web.Application):
@@ -25,7 +25,7 @@ class MatildaApp(tornado.web.Application):
             template_path=os.path.join(os.path.dirname(__file__), "Matilda/templates"),
             static_path=os.path.join(os.path.dirname(__file__), "Matilda/static"),
             debug=options.debug,
-            blog_title="Matilda"
+            blog_title="Matilda",
         )
 
 
