@@ -34,29 +34,7 @@ class ImportPlayList(BaseRequestHandler):
             self.render("songs.html", qqm_songs=[], nem_songs=[])
             return
 
-        pl_url = pl_url.strip()
-
-        if NETLOC_163 in pl_url:
-            if "分享" in pl_url:
-                try:
-                    pl_url = pl_url.split()[0].split('》')[1]
-                except Exception as e:
-                    logging.error(e)
-                    pl_url = None
-                    # self.render("songs.html", qqm_songs=[], nem_songs=[])
-                    # return
-            else:
-                pass
-        elif NETLOC_QQ in pl_url:
-            # https://y.qq.com/n/yqq/playlist/3802473507.html#stat=y_new.profile.create_playlist.click&dirid=1
-            pl_url_split = pl_url.split("#")
-            pl_url = None
-            for split in pl_url_split:
-                if NETLOC_QQ in split:
-                    pl_url = split
-        else:
-            head_res = await async_request.head(pl_url)
-            pl_url = getattr(head_res, 'effective_url', None)
+        pl_url = await self.prepare_url(pl_url)
 
         if not pl_url:
             logging.error("no pl url")
@@ -79,60 +57,95 @@ class ImportPlayList(BaseRequestHandler):
 
         if not pl_rst:
             # TODO Error Page
-            logging.error("no pl_rst")
+            logging.error(f"no pl_rst {pl}")
             self.render("songs.html", qqm_songs=[], nem_songs=[])
             return
 
-        not_playable_songs = []
-        playable_songs = []
-        for song in pl.songs:
-            if song.is_playable:
-                playable_songs.append(song)
-            else:
-                not_playable_songs.append(song)
-
-        tried_replace_songs = {}
-        num = 1
-        for song in not_playable_songs:
-            # 가시나 (Gashina)
-            if song.song_name.find("("):
+        for index, song in enumerate(pl.songs):
+            if song.song_name.find("(") >= 0:
+                # 가시나 (Gashina)
                 song_name = song.song_name[:song.song_name.find("(")].strip()
             else:
                 song_name = song.song_name
 
-            singer_name = " ".join([singer.name for singer in song.singer])
-            if url_parsed.netloc == NETLOC_163:
-                songs = await qqm_client.search(key_words=f'{song_name} {singer_name}', number=num)
-            else:
-                songs = await nem_client.search(key_words=f'{song_name} {singer_name}', number=num)
+            # 区分是否可播放
+            if not song.is_playable:
+                singer_name = " ".join([singer.name for singer in song.singer])
+                num = 1
+                if url_parsed.netloc == NETLOC_163:
+                    songs = await qqm_client.search(key_words=f'{song_name} {singer_name}', number=num)
+                else:
+                    songs = await nem_client.search(key_words=f'{song_name} {singer_name}', number=num)
 
-            if songs:
-                tried_replace_songs[song.song_name] = songs[0]
-            else:
-                tried_replace_songs[song.song_name] = song
+                if songs:
+                    pl.songs[index] = songs[0]
 
-        pl.songs = playable_songs + not_playable_songs
-        self.render("playlist.html", playlist=pl, tried_replace_songs=list(tried_replace_songs.values()))
+        self.render("playlist.html", playlist=pl)
         return
 
+    async def prepare_url(self, pl_url):
+
+        pl_url = pl_url.strip()
+
+        # prepare url
+        if NETLOC_163 in pl_url:
+            if "分享" in pl_url:
+                try:
+                    pl_url = pl_url.split()[0].split('》')[1]
+                except Exception as e:
+                    logging.error(e)
+                    pl_url = None
+                    # self.render("songs.html", qqm_songs=[], nem_songs=[])
+                    # return
+            else:
+                pass
+        elif NETLOC_QQ in pl_url:
+            # https://y.qq.com/n/yqq/playlist/3802473507.html#stat=y_new.profile.create_playlist.click&dirid=1
+            pl_url_split = pl_url.split("#")
+            pl_url = None
+            for split in pl_url_split:
+                if NETLOC_QQ in split:
+                    pl_url = split
+        else:
+            head_res = await async_request.head(pl_url)
+            pl_url = getattr(head_res, 'effective_url', None)
+
+        return pl_url
+
     async def parse_qq_pl(self, url_parsed):
-        params = dict(parse_qsl(url_parsed.query))
-        if params:
-            pl_id = params.get("id", None)
+        if 'n/yqq/playlist' in url_parsed.path:
+            # ParseResult(scheme='https', netloc='y.qq.com', path='/n/yqq/playlist/3802473507.html', params='', query='', fragment='')
+            pl_id = int(url_parsed.path.split('.html')[0].split('playlist/')[1])
+            try:
+                songs = await qqm_client.playlist(pl_id=pl_id)
+            except Exception as e:
+                return False, e
+            else:
+                return True, songs
+        elif 'n/yqq/album' in url_parsed.path:
+            # https://y.qq.com/n/yqq/album/0024bjiL2aocxT.html
+            album_id = url_parsed.path.split('.html')[0].split('album/')[1]
+            try:
+                songs = await qqm_client.album_details(album_media_id=album_id)
+            except Exception as e:
+                return False, e
+            else:
+                return True, songs
+        elif 'w/taoge' in url_parsed.path:
+            # y.qq.com/w/taoge.html?id=3802473507
+            params = dict(parse_qsl(url_parsed.query))
+            pl_id = params.get("id")
             if not pl_id:
                 return False, "no id of the play list"
-        else:
-            # ParseResult(scheme='https', netloc='y.qq.com', path='/n/yqq/playlist/3802473507.html', params='', query='', fragment='')
-            if 'n/yqq/playlist' in url_parsed.path:
-                pl_id = int(url_parsed.path.split('.html')[0].split('playlist/')[1])
+            # pl_id = int(url_parsed.path.split('.html')[0].split('playlist/')[1])
+            try:
+                songs = await qqm_client.playlist(pl_id=pl_id)
+            except Exception as e:
+                return False, e
             else:
-                return False, f"Wrong path {url_parsed.path}"
-        try:
-            songs = await qqm_client.playlist(pl_id=pl_id)
-        except Exception as e:
-            return False, e
+                return True, songs
         else:
-            return True, songs
+            return False, f"Wrong path {url_parsed.path}"
 
     async def parse_163_pl(self, url_parsed):
         path = url_parsed.path.split('/')
