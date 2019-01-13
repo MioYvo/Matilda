@@ -7,7 +7,6 @@ import tornado.ioloop
 import tornado.web
 from tornado.options import define, options, parse_command_line
 
-from Matilda.settings import register_db
 from Matilda.urls import urls
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -16,8 +15,6 @@ define("debug", default=False, help="run in debug mode")
 
 class MatildaApp(tornado.web.Application):
     def __init__(self):
-        register_db()
-
         super(MatildaApp, self).__init__(
             handlers=urls,
             # cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
