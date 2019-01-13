@@ -114,6 +114,7 @@ class ImportPlayList(BaseRequestHandler):
 
     async def parse_qq_pl(self, url_parsed):
         if 'n/yqq/playlist' in url_parsed.path:
+            # y.qq.com/n/yqq/playlist/3802473507.html
             # ParseResult(scheme='https', netloc='y.qq.com', path='/n/yqq/playlist/3802473507.html', params='', query='', fragment='')
             pl_id = int(url_parsed.path.split('.html')[0].split('playlist/')[1])
             try:
@@ -132,7 +133,8 @@ class ImportPlayList(BaseRequestHandler):
             else:
                 return True, songs
         elif 'w/taoge' in url_parsed.path:
-            # y.qq.com/w/taoge.html?id=3802473507
+            # http://url.cn/55TSszn
+            # https://y.qq.com/w/taoge.html?id=3802473507
             params = dict(parse_qsl(url_parsed.query))
             pl_id = params.get("id")
             if not pl_id:
