@@ -7,7 +7,7 @@ from tornado.httputil import url_concat, urlencode
 http_client = AsyncHTTPClient()
 
 
-def get(url, params=None, callback=None, raise_error=True, **kwargs):
+def get(url, params=None, raise_error=True, **kwargs):
     if kwargs.get('validate_cert') is None:
         kwargs['validate_cert'] = False
 
@@ -16,10 +16,10 @@ def get(url, params=None, callback=None, raise_error=True, **kwargs):
     else:
         request = url
 
-    return http_client.fetch(request, callback=callback, raise_error=raise_error)
+    return http_client.fetch(request, raise_error=raise_error)
 
 
-def post(url, data=None, json=None, callback=None, raise_error=True, **kwargs):
+def post(url, data=None, json=None, raise_error=True, **kwargs):
     if kwargs.get('validate_cert') is None:
         kwargs['validate_cert'] = False
 
@@ -38,10 +38,10 @@ def post(url, data=None, json=None, callback=None, raise_error=True, **kwargs):
     else:
         request = url
 
-    return http_client.fetch(request, callback=callback, raise_error=raise_error)
+    return http_client.fetch(request, raise_error=raise_error)
 
 
-def head(url, params=None, callback=None, raise_error=True, **kwargs):
+def head(url, params=None, raise_error=True, **kwargs):
     if kwargs.get('validate_cert') is None:
         kwargs['validate_cert'] = False
 
@@ -50,7 +50,7 @@ def head(url, params=None, callback=None, raise_error=True, **kwargs):
     else:
         request = url
 
-    return http_client.fetch(request, callback=callback, raise_error=raise_error)
+    return http_client.fetch(request, raise_error=raise_error)
 
 
 def parse_body2json(response: HTTPResponse):
@@ -58,8 +58,8 @@ def parse_body2json(response: HTTPResponse):
 
 
 class GAsyncHTTPClient(AsyncHTTPClient):
-    def get(self, url, params=None, callback=None, raise_error=True, **kwargs):
+    def get(self, url, params=None, raise_error=True, **kwargs):
         if not isinstance(url, HTTPRequest):
             url = HTTPRequest(url=url_concat(url, params), **kwargs)
 
-        return self.fetch(url, callback=callback, raise_error=raise_error)
+        return self.fetch(url, raise_error=raise_error)

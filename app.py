@@ -30,7 +30,7 @@ def main():
     parse_command_line()
     app = MatildaApp()
     app.listen(options.port)
-    logging.info(f"app run on {options.port}")
+    logging.info(f"app run on: http://localhost:{options.port}")
     tornado.ioloop.IOLoop.current().start()
 
 
