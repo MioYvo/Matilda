@@ -1,8 +1,8 @@
 # coding=utf-8
 # __author__ = 'Mio'
 
-from .qq_music import QQMusic
-from .netease_music_async import NetEaseMusic
+from Matilda.music_sources.qqm.qq_music import QQMusic
+from Matilda.music_sources.nem.netease_music import NetEaseMusic
 
 
 qqm_client = QQMusic()

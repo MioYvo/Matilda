@@ -5,7 +5,7 @@ API for NetEaseMusic, from https://github.com/darknessomi/musicbox, thanks the g
 """
 
 import os
-import json
+import ujson as json
 import base64
 import hashlib
 import random

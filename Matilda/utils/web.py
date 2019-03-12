@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import json
+import ujson as json
 from tornado.web import RequestHandler
 
 from .http_code import (HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_422_UNPROCESSABLE_ENTITY,
@@ -21,7 +21,8 @@ class BaseRequestHandler(RequestHandler):
         if status_code != HTTP_204_NO_CONTENT:
             # 如果是204的返回, http的标准是不能有body, 所以tornado的httpclient接收的时候会
             # 报错变成599错误
-            self.write(dict(error_code=error_code, message=message, content=content))
+            self.set_header("Content-Type", "application/json; charset=UTF-8")
+            self.write(json.dumps(dict(error_code=error_code, message=message, content=content)))
 
     def write_error_response(self, content=None, error_code=ERR_UNKNOWN, message="UnknownError",
                              status_code=HTTP_400_BAD_REQUEST, reason=None):

@@ -5,6 +5,7 @@ import os.path
 import tornado.escape
 import tornado.ioloop
 import tornado.web
+import uvloop
 from tornado.options import define, options, parse_command_line
 
 from Matilda.urls import urls
@@ -27,6 +28,7 @@ class MatildaApp(tornado.web.Application):
 
 
 def main():
+    uvloop.install()
     parse_command_line()
     app = MatildaApp()
     app.listen(options.port)

@@ -1,5 +1,5 @@
-#FROM python:3-slim
-FROM mio101/py3-alpine-build-base
+FROM python:3-slim
+#FROM mio101/py3-alpine-build-base
 COPY . /app
 
 # install app

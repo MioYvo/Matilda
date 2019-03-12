@@ -1,5 +1,6 @@
 # coding=utf-8
 # __author__ = 'Mio'
+import json
 from collections import namedtuple
 from typing import List
 
@@ -76,3 +77,11 @@ class Song(object):
         d['album'] = dict(self.album._asdict())
         d['singer'] = [dict(s._asdict()) for s in self.singer]
         return d
+
+
+class SongEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Song):
+            return obj.to_dict()
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)

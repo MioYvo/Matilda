@@ -1,6 +1,6 @@
 # coding=utf-8
 # __author__ = 'Mio'
-import json as json_mod
+import ujson as json_mod
 from typing import Awaitable
 
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest, HTTPResponse
