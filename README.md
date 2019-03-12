@@ -21,3 +21,6 @@ Or
 ```commandline
 docker run -itd -p 9090:9090 --name matilda ccr.ccs.tencentyun.com/mioo/matilda
 ```
+
+## TODO
+1. result list of search could be faster: return songs simple info without `song_media_url`, parsing `song_media_url` is slow.

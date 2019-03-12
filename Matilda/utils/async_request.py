@@ -1,13 +1,20 @@
 # coding=utf-8
 # __author__ = 'Mio'
 import json as json_mod
+from typing import Awaitable
+
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest, HTTPResponse
 from tornado.httputil import url_concat, urlencode
 
 http_client = AsyncHTTPClient()
 
 
-def get(url, params=None, raise_error=True, **kwargs):
+def get(
+    url: [str, HTTPRequest],
+    params: dict = None,
+    raise_error: bool = True,
+    **kwargs
+) -> Awaitable["HTTPResponse"]:
     if kwargs.get('validate_cert') is None:
         kwargs['validate_cert'] = False
 

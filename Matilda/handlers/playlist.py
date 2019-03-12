@@ -13,11 +13,13 @@ NETLOC_QQ = "y.qq.com"
 
 
 class PlayList(BaseRequestHandler):
+    # noinspection PyUnusedLocal
     def get(self, *args, **kwargs):
         self.render("search_playlist.html")
 
 
 class ImportPlayList(BaseRequestHandler):
+    # noinspection PyUnusedLocal
     async def get(self, *args, **kwargs):
         """
 
@@ -132,7 +134,7 @@ class ImportPlayList(BaseRequestHandler):
                 return False, e
             else:
                 return True, songs
-        elif 'w/taoge' in url_parsed.path:
+        elif 'taoge' in url_parsed.path:
             # http://url.cn/55TSszn
             # https://y.qq.com/w/taoge.html?id=3802473507
             params = dict(parse_qsl(url_parsed.query))

@@ -1,13 +1,13 @@
 # coding=utf-8
 # __author__ = 'Mio'
-from random import random
-from time import time
+from random import randrange
 
 from Matilda.music_sources.song import Song, Album, Singer, Playlist, AlbumDetail
 from Matilda.utils import async_request
 from Matilda.utils.async_request import parse_body2json
+from Matilda.utils.http_code import HTTP_200_OK
 
-VKEY_URL = "https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg"
+VKEY_URL = "http://base.music.qq.com/fcgi-bin/fcg_musicexpress.fcg"
 
 SEARCH_URL = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp"
 DETAILS_URL = "https://c.y.qq.com/v8/fcg-bin/fcg_play_single_song.fcg"
@@ -17,17 +17,14 @@ PLAYLIST_URL = "https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg"
 ALBUM_DETAILS_URL = "https://c.y.qq.com/v8/fcg-bin/fcg_v8_album_info_cp.fcg"
 ALBUM_PIC_URL = "https://y.gtimg.cn/music/photo_new/T002R300x300M000{album_media_id}.jpg"  # get 300x300 pic of album
 
-QUALITY_192K = "192k"
-QUALITY_320K = "320k"
-QUALITY_APE = "ape"
-QUALITY_FLAC = "flac"
+from collections import namedtuple
+Quality = namedtuple('Quality', ['prefix', 'ext'])
 
-QUALITY_D = {
-    QUALITY_192K: ['M500', 'mp3'],
-    QUALITY_320K: ['M800', 'mp3'],
-    QUALITY_APE: ["A000", 'ape'],
-    QUALITY_FLAC: ['F000', 'flac']
-}
+QUALITY_128K = Quality(prefix='C400', ext='mp3')
+QUALITY_192K = Quality(prefix='M500', ext='mp3')
+QUALITY_320K = Quality(prefix='M800', ext='mp3')
+QUALITY_APE = Quality(prefix="A000", ext='ape')
+QUALITY_FLAC = Quality(prefix='F000', ext='flac')
 
 
 class QQMusic(object):
@@ -57,11 +54,13 @@ class QQMusic(object):
         return [await self.make_song(song) for song in song_list]
 
     async def make_song(self, song):
+        song_media_url, is_playable = await self.song_media_url(song['songmid'])
         return QSong(
             song_name=song['songname'],
             song_id=song['songid'],
             song_mid=song['songmid'],
-            song_media_url=await self.song_media_url(song['songmid']),
+            song_media_url=song_media_url,
+            is_playable=is_playable,
             lyric="",
             album=Album(
                 id=song['albumid'], mid=song['albummid'],
@@ -74,7 +73,7 @@ class QQMusic(object):
                 ) for singer in song['singer']
             ],
             # song['alertid']: 0:无版权, 2:独家+MV, 11:无标签, 100002:独家+MV,
-            is_playable=False if song['alertid'] == 0 else True
+            # is_playable=False if song['alertid'] == 0 else True
         )
 
     async def details(self, song_mid):
@@ -96,32 +95,38 @@ class QQMusic(object):
         # print(f"{data['data'][0]['name']:<15}|{data['data'][0]['album']['name']:^15}")
         return data
 
-    async def get_vkey_guid(self, songmid):
-        filename = f'C400{songmid}.m4a'
-        guid = int(random() * 2147483647) * int(time() * 1000) % 10000000000
-        d = {
-            'format': 'json',
-            'cid': 205361747,
-            'uin': 0,
-            'songmid': songmid,
-            'filename': filename,
-            'guid': guid,
+    async def get_vkey_guid(self):
+        guid = str(randrange(1000000000, 10000000000))
+        params = {"guid": guid, "format": "json", "json": 3}
+        headers = {
+            "referer": "http://y.qq.com",
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46"
+                          + " (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
         }
 
-        res = await self.req.get(url=VKEY_URL, params=d)
+        res = await self.req.get(url=VKEY_URL, params=params, headers=headers)
+        if res.code != HTTP_200_OK:
+            raise Exception(res.body)
         data = parse_body2json(res)
-        return data['data']['items'][0]['vkey'], guid
+        return data['key'], guid
 
-    async def song_media_url(self, song_mid, quality=None, uin=0):
-        # data = await self.details(song_mid=song_mid)
-        # return list(data['url'].values())[0] if data['url'] else None
+    async def song_media_url(self, song_mid) -> (str, bool):
         if not song_mid:
-            return ''
-        quality = QUALITY_D.get(quality) if quality else QUALITY_D.get(self.quality)
-        filename = f"{quality[0]}{song_mid}.{quality[1]}"
-        vkey, guid = await self.get_vkey_guid(song_mid)
-        return f'http://streamoc.music.tc.qq.com/{filename}?vkey={vkey}&guid={guid}&uin={uin}&fromtag=1'
-        # return SONG_MEDIA_URL.format(song_mid=song_mid)
+            return '', False
+
+        vkey, guid = await self.get_vkey_guid()
+
+        for quality in (QUALITY_320K, QUALITY_192K, QUALITY_128K):
+            url = "http://dl.stream.qqmusic.qq.com/%s%s.mp3?vkey=%s&guid=%s&fromtag=1" % (
+                quality.prefix,
+                song_mid,
+                vkey,
+                guid,
+            )
+            if await self.check_playable(url):
+                return url, True
+        else:
+            return '', False
 
     def album_pic_url(self, album_mid):
         return ALBUM_PIC_URL.format(album_media_id=album_mid)
@@ -150,6 +155,13 @@ class QQMusic(object):
                 )
             )
         raise Exception(album_detail.get('message', 'album details error'))
+
+    async def check_playable(self, media_url):
+        res = await self.req.head(media_url, raise_error=False)
+        if res.code != HTTP_200_OK:
+            return False
+        else:
+            return True
 
     async def playlist(self, pl_id):
         params = {
@@ -193,7 +205,6 @@ class QSong(Song):
     @property
     def papa(self):
         return "QQMusic"
-
 
 # if __name__ == '__main__':
 #     client = QQMusic()
