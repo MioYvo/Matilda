@@ -1,5 +1,4 @@
 tornado
-pycrypto
 python-dateutil
 pytz
 ujson
