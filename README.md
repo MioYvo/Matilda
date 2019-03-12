@@ -20,7 +20,7 @@ python app.py --port=9000 --debug=True
 Or
 
 ```commandline
-docker run -itd -p 9090:9090 --name matilda ccr.ccs.tencentyun.com/mioo/matilda
+docker run -itd -p 9090:9090 --name matilda registry.cn-hangzhou.aliyuncs.com/mio101/matilda:latest
 ```
 
 ## TODO
