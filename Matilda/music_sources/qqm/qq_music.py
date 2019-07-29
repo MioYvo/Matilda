@@ -104,17 +104,19 @@ class QQMusic(object):
                           + " (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
         }
 
-        res = await self.req.get(url=VKEY_URL, params=params, headers=headers)
+        res = await self.req.get(url=VKEY_URL, params=params, headers=headers, raise_error=False)
         if res.code != HTTP_200_OK:
-            raise Exception(res.body)
+            return '', False
         data = parse_body2json(res)
         return data['key'], guid
 
-    async def song_media_url(self, song_mid) -> (str, bool):
+    async def song_media_url(self, song_mid: str) -> (str, bool):
         if not song_mid:
             return '', False
 
         vkey, guid = await self.get_vkey_guid()
+        if not guid:
+            return '', False
 
         for quality in (QUALITY_320K, QUALITY_192K, QUALITY_128K):
             url = "http://dl.stream.qqmusic.qq.com/%s%s.mp3?vkey=%s&guid=%s&fromtag=1" % (

@@ -1,7 +1,7 @@
 # coding=utf-8
 # __author__ = 'Mio'
 """
-API for NetEaseMusic, from https://github.com/darknessomi/musicbox, thanks the greate work
+API for NetEaseMusic, from https://github.com/darknessomi/musicbox, thanks the great work
 """
 
 import os
